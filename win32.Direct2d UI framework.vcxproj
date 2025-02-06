@@ -127,7 +127,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Contral.cpp" />
     <ClCompile Include="Control.cpp" />
     <ClCompile Include="Direct2dGraphicsEngine.cpp" />
     <ClCompile Include="main.cpp" />
@@ -135,7 +134,7 @@
     <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Contral.h" />
+    <ClInclude Include="Control.h" />
     <ClInclude Include="Direct2dGraphicsEngine.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="pch.h" />
