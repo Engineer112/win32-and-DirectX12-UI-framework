@@ -3,6 +3,7 @@
 
 int Control::ID = 0;
 bool Control::is_Registered = false;
+WNDCLASS Control::wc = {};
 
 LRESULT Control::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     Control* pThis = nullptr;
@@ -10,7 +11,7 @@ LRESULT Control::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (msg == WM_NCCREATE) {
         CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lparam);
         pThis = reinterpret_cast<Control*>(pCreate->lpCreateParams);
-        SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pThis);
+        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pThis));
     }
     else {
         pThis = reinterpret_cast<Control*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
@@ -33,16 +34,9 @@ LRESULT Control::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 
 Control::Control()
+    : m_x(CW_USEDEFAULT), m_y(CW_USEDEFAULT), m_height(CW_USEDEFAULT), m_width(CW_USEDEFAULT), m_isEnabled(true), m_ID(ID++)
 {
-    m_x = CW_USEDEFAULT;
-    m_y = CW_USEDEFAULT;
-    m_height = CW_USEDEFAULT;
-    m_width = CW_USEDEFAULT;
-    m_isEnabled = true;
-    m_ID = ID;
-    ID + 1;
-
-    if (is_Registered) {
+    if (!is_Registered) {
         wc.lpfnWndProc = WndProc;
         wc.lpszClassName = L"Control";
         wc.hInstance = hInstance();
@@ -53,6 +47,7 @@ Control::Control()
         if (!RegisterClass(&wc)) {
             throw std::runtime_error("Failed to register window class: " + std::to_string(GetLastError()));
         }
+        is_Registered = true;
     }
 }
 
@@ -69,14 +64,12 @@ HRESULT Control::Create()
     return S_OK;
 }
 
-HRESULT Control::Destroy() const
+HRESULT Control::Destroy() const noexcept
 {
     if (DestroyWindow(m_hwnd)) {
         return S_OK;
     }
-    else {
-        return HRESULT_FROM_WIN32(GetLastError());
-    }
+    return HRESULT_FROM_WIN32(GetLastError());
 }
 
 void Control::SetWidth(int newWidth)
@@ -99,6 +92,12 @@ void Control::SetHeight(int newHeight)
     }
 }
 
+void Control::updateDimensionsOnResize(int height, int width)
+{
+    m_height = height;
+    m_width = width;
+}
+
 void Control::SetPos(int x, int y)
 {
     if (!MoveWindow(m_hwnd, x, y, m_width, m_height, TRUE)) {
@@ -110,7 +109,7 @@ void Control::SetPos(int x, int y)
     }
 }
 
-void Control::SetPosOnMove(int x, int y)
+void Control::UpdatePosOnMove(int x, int y) noexcept
 {
     m_x = x;
     m_y = y;
@@ -120,11 +119,10 @@ void defaultWndProc(Control* pThis, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
     case WM_SIZE:
-        pThis->SetHeightOnResize(LOWORD(lparam));
-        pThis->SetWidthOnResize(HIWORD(lparam));
+        pThis->updateDimensionsOnResize(LOWORD(lparam), HIWORD(lparam));
         break;
     case WM_MOVE:
-        pThis->SetPosOnMove(LOWORD(lparam), HIWORD(lparam));
+        pThis->UpdatePosOnMove(LOWORD(lparam), HIWORD(lparam));
         break;
     }
 }

@@ -7,4 +7,4 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-constexpr HINSTANCE hInstance();
+#define hInstance() GetModuleHandle(NULL)

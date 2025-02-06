@@ -6,7 +6,7 @@
 #include <vector>
 #include <stdexcept>
 
-class MainWindow
+class Window
 {
 public:
     void AddControl(Control& newControl);
@@ -16,18 +16,19 @@ public:
     int GetHeight() const noexcept { return m_height; }
     void SetWidth(int newWidth);
     void SetHeight(int newHeight);
-    void SetHeightOnResize(int newHeight) noexcept { m_height = newHeight; }
-    void SetWidthOnResize(int newWidth) noexcept { m_width = newWidth; }
 
     int GetXPos() const noexcept { return m_x; }
     int GetYPos() const noexcept { return m_y; }
     void SetPos(int x, int y);
-    void SetPosOnMove(int x, int y) noexcept;
     void MakeFullScreen() const;
     void MakeWindowed() const;
+    void CloseWindow();
+    HRESULT Create(std::wstring heading, HWND parent);
+    static void InitializeWndClass(HICON icon, HCURSOR cursor);
 
 private:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+    static WNDCLASS wc;
 
     // dimensions
     int m_height{ 0 }, m_width{ 0 };
@@ -39,6 +40,8 @@ private:
     bool m_isEnabled{ true };
 
     std::vector<Control> Controls;
+    void UpdatePosOnMove(int x, int y) noexcept;
+    void UpdateSizeOnReSize(int height, int width);
 };
 
 #endif // MAINWINDOW_H

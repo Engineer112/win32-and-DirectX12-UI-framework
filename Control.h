@@ -2,26 +2,36 @@
 #define CONTROL_H
 
 #include <windows.h>
+#include <stdexcept>
 
 class Control
 {
 public:
     Control();
-    virtual ~Control();
+    ~Control();
     virtual HRESULT HandleMessages(UINT msg, WPARAM wparam, LPARAM lParam) = 0;
     HRESULT Create();
     void SetParent(HWND parent) noexcept { m_parent = parent; }
     int GetID() const noexcept { return m_ID; }
-    HRESULT Destroy() const;
+    HRESULT Destroy() const noexcept;
+
+    int GetWidth() const noexcept { return m_width; }
+    int GetHeight() const noexcept { return m_height; }
+    void SetWidth(int newWidth);
+    void SetHeight(int newHeight);
+
+    int GetXPos() const noexcept { return m_x; }
+    int GetYPos() const noexcept { return m_y; }
+    void SetPos(int x, int y);
 
 protected:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
     // dimensions
-    int m_height{ 0 }, m_width{ 0 };
+    int m_height{ CW_USEDEFAULT }, m_width{ CW_USEDEFAULT };
 
     // coordinates
-    int m_x{ 0 }, m_y{ 0 };
+    int m_x{ CW_USEDEFAULT }, m_y{ CW_USEDEFAULT };
 
     HWND m_parent{ nullptr };
     HWND m_hwnd{ nullptr };
@@ -30,17 +40,9 @@ protected:
     static int ID;
     static bool is_Registered;
 
-    int GetWidth() const noexcept { return m_width; }
-    int GetHeight() const noexcept { return m_height; }
-    void SetWidth(int newWidth) noexcept { m_width = newWidth; }
-    void SetHeight(int newHeight) noexcept { m_height = newHeight; }
-    void SetHeightOnResize(int newHeight) noexcept { m_height = newHeight; }
-    void SetWidthOnResize(int newWidth) noexcept { m_width = newWidth; }
+    void updateDimensionsOnResize(int height, int width);
 
-    int GetXPos() const noexcept { return m_x; }
-    int GetYPos() const noexcept { return m_y; }
-    void SetPos(int x, int y) noexcept { m_x = x; m_y = y; }
-    void SetPosOnMove(int x, int y) noexcept { m_x = x; m_y = y; }
+    void UpdatePosOnMove(int x, int y) noexcept;
 
     static WNDCLASS wc;
 
